@@ -1,2 +1,24 @@
 server:
   port: 9090
+
+#email.user,email.code,email.host,email.auth
+#缩进一格表示讲一级
+email:
+  user: li  #注意冒号与值之间的空格
+  code:
+  host:
+  auth:
+#数组配置：hobbies[3]={data01,data02,data03}
+hobbies:
+  - data01
+  - data02
+  - data03
+
+#整合第三方(mybatis)
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/databasename
+    username:
+    password:
+
