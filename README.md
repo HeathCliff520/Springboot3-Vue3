@@ -123,7 +123,69 @@ sprngsecurity,springcloud)
                    @Select("select * from user where id = #{idfromBrowser}")
                    public User findById(Integer idfromBrowser);
                }
+### springboot管理第三方jar包使之成为Bean
+`注意：不可以同时使用多个方法对同一个类进行注册，否则出错`
+   1. 直接在启动类中注册
+      ```java
+      @SpringBootApplication //使spring可以自动识别本级及其下级已添加注解的bean的包和路径
+      public class SpringbootQuickstartApplication {
+      
+          public static void main(String[] args) {
+             ApplicationContext context = SpringApplication.run(SpringbootQuickstartApplication.class, args);
+             System.out.println("这是一个三方类被注册成了bean："+context.getBean(CloseUtil.class));
+          }
+      
+          @Bean //Bean注解将第三方类CloseUtil通过regiasterCloseUtil方法的返回值注册成bean对象
+          public CloseUtil regiasterCloseUtil(){//该方法不推荐，因为这是在启动类中完成的注册
+              return new CloseUtil();
+          }
+      
+      }
 
 
+   2. 通过配置类完成第三方类注册：../springbootquickstart/config/CommonCofig.java
+      ```java
+         package com.leecliff.springbootquickstart.config;
+         @Configuration //使java类成为配置类，以完成第三方类的bean注册
+         public class CommonCofig {
+            //注册好的bean在容器中的名称默认是该方法名称，即容器中叫做registerCloseUtil，通过`@Bean("beanname")`可以改名
+            @Bean//Bean注解将第三方类CloseUtil通过regiasterCloseUtil方法的返回值注册成bean对象
+            public CloseUtil registerCloseUtil(){
+                   return new CloseUtil();
+            }
+         }
+         System.out.println(context.getBean("registerCloseUtil"));//在启动类中测试
 
-
+   3. 在启动类上通过@import(xxx.class)注册第三方类
+      1. 单个注册
+      ```java
+         @Import(CloseUtil.class)
+         @SpringBootApplication //使spring可以自动识别本级及其下级已添加注解的bean的包和路径
+         public class SpringbootQuickstartApplication {
+             public static void main(String[] args) {
+                ApplicationContext context = SpringApplication.run(SpringbootQuickstartApplication.class, args);
+                System.out.println("这是一个三方类被注册成了bean："+context.getBean(CloseUtil.class));
+             }
+         }
+      ```
+      2. 注册多个
+      ```java
+         //config包中实现ImportSelector接口
+         package com.leecliff.springbootquickstart.config;
+         public class CommonImportSelector implements ImportSelector {
+              @Override
+              public String[] selectImports(AnnotationMetadata importingClassMetadata) {
+                   //将多个第三方类注册为bean
+                   return new String[]{"ch.qos.logback.core.util.CloseUtil","ch.qos.logback.core.util.CharSequenceToRegexMapper"};
+              }
+         }
+      
+         //启动类中    
+         @Import(CommonImportSelector)
+         @SpringBootApplication //使spring可以自动识别本级及其下级已添加注解的bean的包和路径
+         public class SpringbootQuickstartApplication {
+             public static void main(String[] args) {
+                ApplicationContext context = SpringApplication.run(SpringbootQuickstartApplication.class, args);
+                System.out.println("这是一个三方类被注册成了bean："+context.getBean(CloseUtil.class));
+             }
+         }
