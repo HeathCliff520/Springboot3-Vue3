@@ -141,6 +141,7 @@ sprngsecurity,springcloud)
           }
       
       }
+      ```
 
 
    2. 通过配置类完成第三方类注册：../springbootquickstart/config/CommonCofig.java
@@ -155,6 +156,7 @@ sprngsecurity,springcloud)
             }
          }
          System.out.println(context.getBean("registerCloseUtil"));//在启动类中测试
+      ```
 
    3. 在启动类上通过@import(xxx.class)注册第三方类
       1. 单个注册
@@ -189,3 +191,58 @@ sprngsecurity,springcloud)
                 System.out.println("这是一个三方类被注册成了bean："+context.getBean(CloseUtil.class));
              }
          }
+      ```
+      3. 通过外部配置文件注册多个第三方类成为bean
+         1. 建文件`../resources/common.imports`存放多个类路径名
+            ```text
+            //一行放一个类
+             ch.qos.logback.core.util.CloseUtil
+             ch.qos.logback.core.util.CharSequenceToRegexMapper
+            ```
+         2. 实现`ImportSelector`接口
+              ```java
+              package com.leecliff.springbootquickstart.config;
+              public class CommonImportSelector implements ImportSelector {
+                     @Override
+                     public String[] selectImports(AnnotationMetadata importingClassMetadata) {
+                         //将多个第三方类注册为bean
+                         //return new String[]{"ch.qos.logback.core.util.CloseUtil"
+                         // ,"ch.qos.logback.core.util.CharSequenceToRegexMapper"};
+                         List<String> importsList=new ArrayList<>();
+                         //通过流读取外部资源
+                         InputStream resourceStream = CommonImportSelector.class
+                                 .getClassLoader()
+                                 .getResourceAsStream("common.imports");
+                         BufferedReader br=new BufferedReader(new InputStreamReader(resourceStream));
+                         String line =null;
+                         try {
+                             while ((line= br.readLine())!=null){
+                                 importsList.add(line);
+                             }
+                         }catch (IOException e){
+                             throw new RuntimeException(e);
+                         }finally {
+                             if (br!=null){
+                                 try {
+                                     br.close();
+                                 } catch (IOException e) {
+                                     throw new RuntimeException(e);
+                                 }
+                             }
+                         }
+                         return importsList.toArray(new String[0]);
+                     }
+              }
+            ```
+         3. 在启动类中通过自定义组合注解`@EnableCommonConfig`使用注册好的第三方bean
+            ```java
+                package com.leecliff.springbootquickstart.anno;
+                @Target(ElementType.TYPE)
+                @Retention(RetentionPolicy.RUNTIME)
+                @Import(CommonImportSelector.class)
+                public @interface EnableCommonConfig {//自定义组合注解以供启动了使用
+                }
+            //注册类中调用
+                
+                
+            ```
