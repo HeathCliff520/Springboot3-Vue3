@@ -1,11 +1,5 @@
 # Springboot3-Vue3
 黑马听课笔记实验
-
-```md
-springboot是springFramework框架
-的一个子项目(springDate，springamqp,
-sprngsecurity,springcloud)
-```
 ## Springboot-quickstart
 ### springboot项目创建：
 1. 创建maven工程
