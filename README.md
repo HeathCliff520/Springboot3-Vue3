@@ -237,6 +237,16 @@
                 public @interface EnableCommonConfig {//自定义组合注解以供启动了使用
                 }
             //注册类中调用
+                @SpringBootApplication 
+                @EnableCommonConfig
+                public class SpringbootQuickstartApplication {
+                   public static void main(String[] args) {
+                     ApplicationContext context = SpringApplication
+                                                  .run(SpringbootQuickstartApplication.class, args);
+                     System.out.println("这是一个三方类被注册成了bean："+context.getBean(CloseUtil.class));
+                   }
+                }                
+                
                 
                 
             ```
